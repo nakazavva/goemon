@@ -48,8 +48,10 @@ type task struct {
 
 type conf struct {
 	Command    string
-	LiveReload string  `yaml:"livereload"`
-	Tasks      []*task `yaml:"tasks"`
+	LiveReload string   `yaml:"livereload"`
+	Tasks      []*task  `yaml:"tasks"`
+	Ignores    []string `yaml:"ignores"`
+	ignoreRes  []*regexp.Regexp
 }
 
 //New create new instance of goemon
@@ -191,6 +193,12 @@ func (g *goemon) watch() error {
 		if !info.IsDir() {
 			return nil
 		}
+		for _, ire := range g.conf.ignoreRes {
+			if ire.MatchString(path) {
+				return filepath.SkipDir
+			}
+		}
+
 		if _, ok := dup[path]; !ok {
 			g.fsw.Add(path)
 			dup[path] = true
@@ -220,6 +228,7 @@ func (g *goemon) watch() error {
 
 func (g *goemon) load() error {
 	g.conf.Tasks = []*task{}
+	g.conf.ignoreRes = []*regexp.Regexp{}
 	fn, err := filepath.Abs(g.File)
 	if err != nil {
 		return err
@@ -257,6 +266,17 @@ func (g *goemon) load() error {
 		} else {
 			t.ire = nil
 		}
+	}
+	for _, ig := range g.conf.Ignores {
+		if ig == "" {
+			continue
+		}
+		ire, err := compilePattern(ig)
+		if err != nil {
+			g.Logger.Println(err)
+			continue
+		}
+		g.conf.ignoreRes = append(g.conf.ignoreRes, ire)
 	}
 	return nil
 }
