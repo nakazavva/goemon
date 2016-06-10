@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/mattn/goemon"
 	"os"
 	"sort"
+
+	"github.com/nakazavva/goemon"
 )
 
 var defaultConf = map[string]string{
