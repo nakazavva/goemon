@@ -8,7 +8,7 @@ import (
 	"os"
 	"sort"
 
-	"github.com/mattn/goemon"
+	"github.com/nakazavva/goemon"
 )
 
 func usage() {
